@@ -1,0 +1,54 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>京东开源移动端Vue组件库NutUI 2.0</title><link rel="shortcut icon" href="/images/avatar.png"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.2.0/styles/github.min.css"><script src="//cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js"></script></head><body><nav class="main-nav"><a href="/">Home</a><a href="/about">About</a><a href="/archives">Archives</a></nav><div class="profile"><section id="wrapper"><header id="header"><a href="/about"><img class="2x" id="avatar" src="/images/avatar.png"></a><h1>iFrans</h1><h2>前端手艺人</h2></header></section></div><section class="post" id="wrapper"><article><header><h1>京东开源移动端Vue组件库NutUI 2.0</h1><h2 class="headline">Jan 20, 2019 4:41·1,806 words
+·7 minutes read<span class="tags"></span></h2></header><div id="toc"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#京东APP-7-0-视觉风格"><span class="toc-text">京东APP 7.0 视觉风格</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#定制主题"><span class="toc-text">定制主题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#按需加载"><span class="toc-text">按需加载</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#国际化"><span class="toc-text">国际化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SVG图标"><span class="toc-text">SVG图标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#全新架构"><span class="toc-text">全新架构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#组件"><span class="toc-text">组件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#跨平台"><span class="toc-text">跨平台</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#参与开发"><span class="toc-text">参与开发</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#链接"><span class="toc-text">链接</span></a></li></ol></div><section id="post-body"><p>NutUI 是一套来自京东用户体验设计部（JDC）前端开发部的移动端 Vue 组件库，NutUI 1.0 版本于 2018 年发布。据不完全统计，目前在京东至少有30多个 web 项目正在使用 NutUI。</p>
+<p><img src="http://img11.360buyimg.com/uba/jfs/t1/16123/5/8091/6992/5c733fc1E31e7e893/d319bd4667eec39d.png" alt="" width="300"></p>
+<p>经过一段时间紧锣密鼓的开发，近期，我们正式发布了 NutUI 的 2.0 版。NutUI 2.0 定位于一个京东风格的移动端精品组件库，并不是 NutUI 1.x 的简单升级版。</p>
+<p><img src="https://img14.360buyimg.com/uba/s300x300_jfs/t1/32118/11/559/2782/5c3d81ecEbda0c0f1/5f2b637d11817204.png" alt="" width="300"></p>
+<p>（扫描/长按识别二维码可以体验 NutUI 2.0 的组件示例）</p>
+<p>NutUI 官网同步进行了改版，也欢迎大家访问 <a href="https://nutui.jd.com" target="_blank" rel="noopener">https://nutui.jd.com</a> ( PC 端)。</p>
+<p>我们来看看 NutUI 2.0 有哪些重要的新特性。</p>
+<h2 id="京东APP-7-0-视觉风格"><a href="#京东APP-7-0-视觉风格" class="headerlink" title="京东APP 7.0 视觉风格"></a>京东APP 7.0 视觉风格</h2><p>NutUI 2.0 的组件在开发时参考了京东APP 7.0 视觉规范，统一了视觉风格和动效。</p>
+<p><img src="https://img11.360buyimg.com/imagetools/jfs/t1/20463/8/5981/58667/5c45260bE6e52a590/e0b851b897ac3126.png" alt="" width="350"></p>
+<p><img src="https://img12.360buyimg.com/imagetools/jfs/t1/28673/8/5962/84267/5c452698E82858f62/18a753a7817d0879.png" alt="" width="350"></p>
+<p>如果与你需要的风格有差异，可以通过增加一个自定义 class 来调整样式。如果差异较大，可以替换掉整个组件的默认样式文件，既可达到修改样式的目的，又能减少被覆盖的冗余代码。</p>
+<h2 id="定制主题"><a href="#定制主题" class="headerlink" title="定制主题"></a>定制主题</h2><p>NutUI 2.0 支持自定义组件库整体主题风格。通过在项目中重置一些样式变量的值，可轻而易举的实现组件换肤。</p>
+<p><img src="https://img12.360buyimg.com/imagetools/jfs/t1/26262/23/5969/113169/5c4527eaE9d4012fd/c6c68cef64dfaa21.png" alt="" width=""></p>
+<h2 id="按需加载"><a href="#按需加载" class="headerlink" title="按需加载"></a>按需加载</h2><p>NutUI 1.x 的按需加载是通过自定义构建的方式来实现的，虽可满足需求，但是让用户每次都进 node_modules 目录下找到 NutUI 项目目录安装依赖，再进行自定义构建多有不便。于是，2.0 版我们对组件的按需加载功能进行了重新设计。</p>
+<p>使用 NutUI 2.0 的组件时，不必导入完整的组件库，直接在项目中引入我们需要的组件文件及其对应的样式文件即可。如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> Button <span class="keyword">from</span> <span class="string">'@nutui/nutui/dist/packages/button/button.js'</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">'@nutui/nutui/dist/packages/button/button.css'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> Switch <span class="keyword">from</span> <span class="string">'@nutui/nutui/dist/packages/switch/switch.js'</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">'@nutui/nutui/dist/packages/Switch/switch.css'</span>;</span><br></pre></td></tr></table></figure>
+<p>不需要再进行自定义构建了，比 NutUI 1.x 方便不少吧。如果你觉得这种方式还不够方便或者不够优雅，也没关系，通过我们提供的 webpack 插件 <a href="https://www.npmjs.com/package/@nutui/babel-plugin-separate-import" target="_blank" rel="noopener"><code>@nutui/babel-plugin-separate-import</code></a> ，还可以支持 <code>ES6 module</code> 风格的按需加载写法，且兼容不支持 <code>ES6 module</code> 语法的浏览器。如：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; Button, Icon &#125; <span class="keyword">from</span> <span class="string">'@nutui/nutui'</span>;</span><br></pre></td></tr></table></figure>
+<p>安装插件也麻烦？不妨试试我们提供的一个 Vue 项目的构建工具 <a href="https://www.npmjs.com/package/gaea-cli" target="_blank" rel="noopener"><code>Gaea-cli</code></a>，它可以快速生成一个已内置了这个插件的 Vue 模板工程，你可以直接基于这个工程开发项目。另外，这个构建工具还有很多高级功能，以及针对京东开发环境进行的特定优化，此前的系列版本已经过数十个项目的验证，还是比较稳定的。</p>
+<h2 id="国际化"><a href="#国际化" class="headerlink" title="国际化"></a>国际化</h2><p>NutUI 2.0 开始支持多语言。组件默认使用中文，可加载其他语言包来实现多语言切换功能。如果你的项目中已经使用了目前 Vue 生态里特别流行的国际化插件 <code>vue-i18n</code> 来实现项目的国际化功能，那么在使用 NutUI 2.0 组件的时候，也完全不需要担心，NutUI 2.0 的国际化功能是完全兼容 <code>vue-i18n</code> 插件的。</p>
+<h2 id="SVG图标"><a href="#SVG图标" class="headerlink" title="SVG图标"></a>SVG图标</h2><p>我们认为移动端组件库图标方案的最佳实践是 SVG 方案，因为 SVG 图标较字体图标更灵活，更利于按需加载，也不会招致部分浏览器对其进行抗锯齿处理，清晰度高，结合 symbol 元素还可以实现 SVG 图标的复用。同时，SVG 图标在移动端的兼容性也是良好的。我们在 NutUI 1.x 时期就选择了 SVG 作为组件库的图标方案，而这种选择在 NutUI 2.0 版本获得了传承。</p>
+<hr>
+<p>除了上述几点，NutUI 2.0 还有支持 <code>TypeScript</code>，支持 <code>SSR</code> 服务端渲染等特性。</p>
+<h2 id="全新架构"><a href="#全新架构" class="headerlink" title="全新架构"></a>全新架构</h2><p>NutUI 2.0 基于全新的架构开发，并非基于 1.0 的架构升级而来。我们结合 1.0 的架构经验、2.0 的功能需求、工具的新变化、我厂的开发环境、主流优秀组件库的实现方案等因素，全新打造了 2.0 的架构。架构方面主要有以下特点：</p>
+<ul>
+<li>基于 <code>Webpack 4.0</code> 开发，拥有更快的构建速度，输出更小的 bundle 文件</li>
+<li>一次性构建出多种类型的 bundle，兼容各种主流模块化场景和非模块化引用场景</li>
+<li>基于 <code>Babel 7</code> 实现了 Polyfill 的智能加载，无须额外引入 Babel-polyfill 文件也可兼容低版本浏览器</li>
+<li>集成 <a href="http://carefree.jd.com" target="_blank" rel="noopener"><code>Carefree</code></a> 方案，大幅提升我厂开发环境的真机调试效率</li>
+<li><code>Markdown</code> 格式的文档便于书写和 Github 阅读，基于 MD 文件自动生成文档网站</li>
+<li>示例页面 PWA 加持，支持离线缓存和创建主屏图标</li>
+<li>接入持续化集成和自动化测试，提升代码可靠性</li>
+<li>支持自动生成新组件模板</li>
+<li>配套一个 webpack 插件和一个 Vue 模板工程构建工具（Gaea 4.0)</li>
+<li>…</li>
+</ul>
+<h2 id="组件"><a href="#组件" class="headerlink" title="组件"></a>组件</h2><p>组件库是个舞台，台上的主角不是组件库的功能和架构，而是组件。我们在组件开发上下了不少功夫，精心挑选和打磨了一批组件。NutUI 2.0 一期拥有组件三十多个，涉及“基础”、“布局”，“数据录入”、“操作反馈”、“数据展示”、“导航”6大类。</p>
+<p>接下来，我们会集中精力继续新增一批组件，同时也会跟进对现有组件的打磨和维护。大家有什么通用组件的需求也可以反馈给我们。</p>
+<h2 id="跨平台"><a href="#跨平台" class="headerlink" title="跨平台"></a>跨平台</h2><p>根据开发规划，NutUI 2.0 还会有一个重磅功能 —— 支持将 Vue 组件转成微信小程序组件，实现一次编码跨平台（H5和微信小程序）使用，届时 NutUI 将由一个 Web 端 Vue 组件库升华为一个多终端跨平台组件库。目前，这个功能仍在加紧开发中，稍后上线，敬请期待。</p>
+<h2 id="参与开发"><a href="#参与开发" class="headerlink" title="参与开发"></a>参与开发</h2><p>欢迎感兴趣的小伙伴参与 NutUI 项目的开发，我们建议通过提 pull request 的方式参与。如果要修一个 bug，请提交 pull request 到 master 分支；如果你要提一个新增功能或组件的 pull request，那么请基于 v2 分支，通过 Code Review 之后，我们会合并你的代码。</p>
+<hr>
+<p>NutUI 2.0 组件库没有埋任何彩蛋，大家尽管放心使用哦~</p>
+<h2 id="链接"><a href="#链接" class="headerlink" title="链接"></a>链接</h2><ul>
+<li>官网：<a href="https://nutui.jd.com" target="_blank" rel="noopener">https://nutui.jd.com</a> (PC端)</li>
+<li>Github仓库：<a href="https://github.com/jdf2e/nutui/" target="_blank" rel="noopener">https://github.com/jdf2e/nutui/</a> (欢迎Star~)</li>
+<li>更新日志：<a href="https://github.com/jdf2e/nutui/releases" target="_blank" rel="noopener">https://github.com/jdf2e/nutui/releases</a></li>
+<li>反馈建议：<a href="https://github.com/jdf2e/nutui/issues" target="_blank" rel="noopener">https://github.com/jdf2e/nutui/issues</a></li>
+<li>NutUI按需加载插件：<a href="https://www.npmjs.com/package/@nutui/babel-plugin-separate-import" target="_blank" rel="noopener">https://www.npmjs.com/package/@nutui/babel-plugin-separate-import</a></li>
+<li>Vue模板工程构建工具：<a href="https://www.npmjs.com/package/gaea-cli" target="_blank" rel="noopener">https://www.npmjs.com/package/gaea-cli</a></li>
+<li>不依赖wifi热点的H5真机测试工具Carefree: <a href="https://carefree.jd.com/" target="_blank" rel="noopener">https://carefree.jd.com/</a></li>
+<li>联系我们：<a href="mailto:nutui@jd.com" target="_blank" rel="noopener">nutui@jd.com</a></li>
+</ul>
+</section><nav id="post-nav"><span class="prev"><a href="/2019/02/20/plus/"><span class="arrow">←</span>Newer Posts</a></span><span class="next"></span></nav></article></section><footer id="footer"><div id="social"><a class="symbol" href="https://github.com/Franslee"><i class="fa fa-github"></i></a></div><p class="small">© Copyright 2018 &nbsp;<i class="fa fa-heart" aria-hidden="true">&nbsp;Frans</i></p><p class="small">Powered by &nbsp;<a href="https://hexo.io/">Hexo &nbsp;</a>Theme By &nbsp;<a href="https://github.com/fuzhouxxdong/hexo-theme-dxx">Dxx</a></p></footer><script>hljs.initHighlightingOnLoad();</script></body></html>
