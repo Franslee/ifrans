@@ -1,0 +1,115 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>不依赖wifi热点的H5真机调试工具Carefree</title><link rel="shortcut icon" href="/images/avatar.png"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="stylesheet" href="/css/github.css"><script src="/js/highlight.min.js"></script></head><body><nav class="main-nav"><a href="/">Home</a><a href="/about">About</a><a href="/archives">Archives</a></nav><div class="profile"><section id="wrapper"><header id="header"><a href="/about"><img class="2x" id="avatar" src="/images/avatar.png"></a><h1>前端小栈</h1><h2>前端手艺人Frans.Lee的个人博客</h2></header></section></div><section class="post" id="wrapper"><article><header><h1>不依赖wifi热点的H5真机调试工具Carefree</h1><h2 class="headline">Sep 01, 2018 2:50·2,607 words
+·9 minutes read<span class="tags"></span></h2></header><section id="post-body"><h2 id="简介：从此我厂移动web真机测试告别-wifi-热点。"><a href="#简介：从此我厂移动web真机测试告别-wifi-热点。" class="headerlink" title="简介：从此我厂移动web真机测试告别 wifi 热点。"></a>简介：从此我厂移动web真机测试告别 wifi 热点。</h2><p>厂外的小伙伴看到这篇文章标题可能会感到莫名其妙，真机测试移动 web 与 wifi 热点有神马关系？的确，通常情况下真机测试移动端 web 确实用不到 wifi 热点。不过，我厂的前端开发和测试小伙伴对此一定不会感到陌生，我们受这个问题困扰太久太久了。</p>
+<p>手机真机测试经常有需要访问开发电脑的场景，比如：</p>
+<ul>
+<li>访问开发电脑本地的开发文件</li>
+<li>使用电脑 hosts</li>
+<li>在电脑上抓包、调试页面</li>
+<li>……</li>
+</ul>
+<p>而我厂的手机和开发用电脑处于不同网络，无法直接互访。所以，不少小伙伴无奈使用电脑发射 wifi 热点给手机连接，使其处于同一局域网，以实现互访。这种方案的问题可归结为两大方面：一是政策方面，我厂信息安全规定明确禁止发射个人 wifi 热点；二是体验方面，发射 wifi 热点繁琐且不稳定，影响工作效率。</p>
+<p><img src="https://img30.360buyimg.com/uba/jfs/t23929/175/1731250435/31431/bad5ef88/5b681bb8Neac470b0.png" width="330"></p>
+<p>针对这个工作中的痛点，我们现提出一套不需要 wifi 热点的跨平台移动 web 真机测试解决方案，希望它能缓解小伙伴的些许困扰，像这个方案的名字 <code>Carefree</code> 一样，快乐舒畅的工作。</p>
+<p><code>Carefree</code> 解决方案由“服务端 whistle ”和“ webpack 插件 @nutui/carefree ”两部分组成。</p>
+<h3 id="服务端-whistle"><a href="#服务端-whistle" class="headerlink" title="服务端 whistle"></a>服务端 whistle</h3><p>现在主流的代理调试工具有 Fiddler 、 Charles 和这两年在前端流行起来的 whistle 。</p>
+<blockquote>
+<p>whistle (读音[ˈwɪsəl]，拼音[wēisǒu])是一个基于 Node 实现的跨平台 web 调试代理工具，主要用于查看、修改 HTTP 、 HTTPS 、 Websocket 的请求、响应，不同于 Fiddler 通过断点修改请求响应的方式， whistle 采用的是类似配置系统 hosts 的方式，一切操作都可以通过配置实现，支持域名、路径、正则表达式、通配符、通配路径等多种匹配方式，且可以通过Node模块扩展功能，功能十分强大。</p>
+</blockquote>
+<p>这些代理调试工具都提供 HTTP 代理服务，是 HTTP 请求及其服务端响应的中转站。也正是基于这一点，它们才有机会截获请求和响应。</p>
+<p><img src="https://img20.360buyimg.com/uba/jfs/t25759/332/179768615/7403/233b4e6a/5b6834acNd05ac3f5.png"></p>
+<p>这些代理调试工具安装在我们的开发电脑上，手机需要将代理服务器设置为我们的开发电脑，之后我们才可以通过这些工具的 UI 界面对其进行抓包和调试等操作。</p>
+<p><img src="https://img11.360buyimg.com/uba/jfs/t22699/126/1694537735/6950/667c51a6/5b681bb8Nd347e49c.png"></p>
+<p>我们需要明确的是，手机需要访问的是代理调试工具提供的 HTTP 代理服务，而开发电脑需要访问的是代理调试工具的 UI 界面。问题是 HTTP 代理服务及其所属的工具在开发电脑上，而手机和电脑处于不同网络无法直接互访。那么，在不借助电脑 wifi 热点的情况下，手机怎么样才能访问到这个 HTTP 代理服务呢？</p>
+<p>我们解决问题的思路是设法让手机访问到代理调试工具的 HTTP 代理服务，同时让开发电脑可以访问此工具的 UI 界面。</p>
+<p>沿着这个思路走，如果我们把代理调试工具安装在一台手机和电脑都可以访问的内网服务器上，可以解决手机访问 HTTP 代理服务的问题。但这样的话，在电脑上又该怎样访问该工具的 UI 界面呢？</p>
+<p>反观这几个主流的代理调试工具，会发现 whistle 可以很好的满足这个需求。因为 whistle 的服务是通过 Node 提供的，不但可以部署在 Linux 服务器上，其性能理论上还要好过部署在本地电脑上。另一方面， whistle 的 UI 界面是通过 web 提供的，也就是说 whistle 在提供 HTTP 代理服务的同时，还提供了 web 伺服服务，通过浏览器可以在本地或远程访问其 web 界面进行规则管理或抓包调试等操作。</p>
+<p>所以，把 whistle 部署在内网服务器上给手机提供代理服务，同时在开发电脑上通过浏览器访问服务端 whistle 的 UI 界面进行抓包调试是完全可行的方案。“服务端 whistle ”是我们整套解决方案的重要组成部分。</p>
+<p><img src="https://img12.360buyimg.com/uba/jfs/t25600/246/163078222/12039/c9105c07/5b681bb8Nf6f4da26.png"></p>
+<p>通过这种方案，我们可以解决手机真机测试 H5 时的修改 hosts 、URL 映射、跨域、 Mock 接口数据、捕获页面错误、调试等问题。</p>
+<p>事实上，除了解决 wifi 热点访问不便的问题，这个方案还有不少其他优点：</p>
+<ul>
+<li>方便团队协作，一个项目只需要维护一套 whistle 规则和数据</li>
+<li>降低团队 whistle 工具维护成本及本地资源占用</li>
+<li>方便开发者在不同设备上开发，无需频繁导入导出配置</li>
+<li>……</li>
+</ul>
+<p>有人可能会担心多人共用一套 whistle 时规则会冲突，这种可能性确实存在，解决方案是通过不同的端口启动多个 whistle 实例。</p>
+<p>一切看上去都很美。然鹅，有个问题是这种方案解决不了的，那就是手机无法访问开发电脑上的文件，比如访问开发电脑本地的项目页面。受这个问题困扰的主要是前端团队。</p>
+<h3 id="webpack-插件-nutui-carefree"><a href="#webpack-插件-nutui-carefree" class="headerlink" title="webpack 插件 @nutui/carefree"></a>webpack 插件 @nutui/carefree</h3><p>鉴于目前我厂大部分移动 web 项目使用的前端构建工具是 webpack ，所以我们开发了一个 webpack 插件来解决这个问题。插件的名叫 <code>@nutui/carefree</code>，已发布到 NPM ，有这种场景需求的小伙伴，可以通过安装使用。</p>
+<p>我们先来了解一下这个插件的原理。</p>
+<p>在手机和电脑无法直接互访的场景下，要在手机上访问开发电脑本地文件，一个可行的思路是把文件上传到内网服务器。而这种方案不被接受的主要原因还是效率问题：</p>
+<ul>
+<li>调试的时候常常需要频繁改动，而每次改动都把整个工程完整的构建一版，构建效率低。</li>
+<li>每次构建完毕都需要把构建结果全部上传一遍，上传效率低。</li>
+<li>上传到测试服务器后，需在手机浏览器中手动输入页面地址，或者在电脑上把页面地址生成二维码给手机扫码，访问效率低。</li>
+<li>……</li>
+</ul>
+<p>我们这个插件的原理是对此方案的各个环节逐一进行优化，尽可能的自动化、快速化，大幅提升效率，使其成为一种“可被接受”的方案。</p>
+<p><code>@nutui/carefree</code> 插件工作的大致流程如下：</p>
+<ol>
+<li>修改部分 webpack 配置，以<code>监听模式（Watch Mode）</code>启动编译，将编译后的文件<code>自动上传</code>到内网服务器（解决手动上传不便的问题，目前支持 ssh 和 ftp 两种上传方式）</li>
+<li>上传完毕后，在终端（命令行界面）打印出入口页面地址和<code>二维码</code>，手机扫码即可访问（解决手机输入地址不便的问题）</li>
+<li>监听文件变化，一旦保存修改，自动触发<code>增量</code>编译（解决全量编译速度慢的问题）</li>
+<li>自动将编译后且有变化的文件<code>增量</code>上传到内网服务器（解决全量上传速度慢的问题）</li>
+<li>在手机上刷新页面或重新扫码即可看到变化</li>
+</ol>
+<p><img src="https://img13.360buyimg.com/uba/jfs/t22801/213/1706533186/1717510/70cab14a/5b681cecN4a0cc25d.gif"></p>
+<p>插件的安装与使用：</p>
+<ul>
+<li>安装插件</li>
+</ul>
+<p>推荐使用 NPM 安装本插件</p>
+<pre><code class="shell">npm install @nutui/carefree --save-dev
+</code></pre>
+<ul>
+<li>修改 package.json 文件</li>
+</ul>
+<p>scripts 字段中新增一个自定义命令，如 <code>carefree-dev</code></p>
+<pre><code class="javascript">&quot;scripts&quot;: {
+    &quot;carefree-dev&quot;: &quot;cross-env NODE_ENV=carefree carefree_env=dev webpack -w --colors --progress&quot;
+}
+</code></pre>
+<ul>
+<li>修改 webpack 配置文件 webpack.config.js</li>
+</ul>
+<pre><code class="javascript">//引入插件
+const Carefree = require(&#39;@nutui/carefree&#39;);
+
+//将插件放在 plugins 数组中，并进行配置
+webpackConfig.plugins = [
+    new Carefree({
+        //……
+    })
+];
+</code></pre>
+<p>具体配置参数可参考本插件 NPM 项目主页[1]。</p>
+<p>通过以上3步即可完成插件安装，使用 <code>npm run carefree-dev</code> 命令即可开启 <code>Carefree</code> 之旅。</p>
+<h3 id="示例项目"><a href="#示例项目" class="headerlink" title="示例项目"></a>示例项目</h3><p>如果你已迫不及待的想快速体验一下，不妨试试我们提供的示例项目，这是一个已经集成了本插件的 webpack 项目。体验只需3步：</p>
+<ul>
+<li>将本插件项目代码库 <code>example</code> 分支代码克隆到本地，并进入项目目录</li>
+</ul>
+<pre><code class="shell">git clone -b example http://git.jd.com/jdcfe/carefree.git
+
+cd carefree
+</code></pre>
+<ul>
+<li>安装依赖</li>
+</ul>
+<pre><code class="shell">npm install
+</code></pre>
+<ul>
+<li>执行 <code>npm run carefree-dev</code> 命令开始构建</li>
+</ul>
+<pre><code class="shell">npm run carefree-dev
+</code></pre>
+<p>构建并自动上传完毕之后终端会打印出入口页面地址的二维码，手机（连公司内网）扫码即可访问到页面。</p>
+<p>修改 <code>src/view/index.vue</code> 文件，保存改动会触发自动增量编译和增量上传，完成之后终端二维码更新，手机重新扫码或刷新页面即可看到变化。</p>
+<p>配合前文提到的“服务端 whistle ”，可解决手机调试本地项目页面时的配 hosts、跨域、URL 映射、Mock 数据等问题。</p>
+<p>“服务端 whistle ” + “ webpack 插件 @nutui/carefree ”共同组成了这个不依赖 wifi 热点的移动 web 真机测试解决方案—— <code>Carefree</code>。</p>
+<p><img src="https://img14.360buyimg.com/uba/jfs/t25597/160/164028581/28691/d5f72491/5b681bb8Nc459312a.png" width="330"></p>
+<p>如果你只需要用真机测试内网服务器或线上的 H5 页面，比如对大多数测试团队的小伙伴来说，只用“服务端 whistle ”方案就完全可以满足需要。<br>只有那些需要用真机访问本地 webpack 项目资源的小伙伴才需要用到 <code>@nutui/carefree</code> 插件，而即便在这种场景下，很多时候还是需要“服务端 whistle ”方案联合使用的。</p>
+<p>基于这套方案，我们在日常开发测试工作中已基本摆脱了对 wifi 热点的依赖，现在把它分享给大家。考虑到大家可能对 whistle 还不是太熟悉，我们汇总了一些工作中常用的 whistle 使用技巧，连同 <code>Carefree</code> 方案做了个网站（PC端），供大家参考[3]。</p>
+<h2 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h2><p>[1] <a href="https://www.npmjs.com/package/@nutui/carefree" target="_blank" rel="noopener">https://www.npmjs.com/package/@nutui/carefree</a></p>
+<p>[2] whistle官网 <a href="http://wproxy.org/whistle/" target="_blank" rel="noopener">http://wproxy.org/whistle/</a></p>
+<p>[3] <a href="http://carefree.jd.com" target="_blank" rel="noopener">http://carefree.jd.com</a></p>
+</section><nav id="post-nav"><span class="prev"><a href="/京东开源移动端Vue组件库NutUI 2.0发布/"><span class="arrow">←</span>Newer Posts</a></span><span class="next"><a href="/再谈Vue组件库开发/">Older Posts<span class="arrow">→</span></a></span></nav></article></section><footer id="footer"><div id="social"><a class="symbol" href="https://github.com/Franslee"><i class="fa fa-github"></i></a></div><p class="small">© Copyright 2018 &nbsp;<i class="fa fa-heart" aria-hidden="true">&nbsp;Frans</i></p><p class="small">Powered by &nbsp;<a href="https://hexo.io/">Hexo &nbsp;</a>Theme By &nbsp;<a href="https://github.com/fuzhouxxdong/hexo-theme-dxx">Dxx</a></p></footer><script>hljs.initHighlightingOnLoad();</script></body></html>

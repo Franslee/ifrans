@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>京东PLUS会员项目前端性能优化实践</title><link rel="shortcut icon" href="/images/avatar.png"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.2.0/styles/github.min.css"><script src="//cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js"></script></head><body><nav class="main-nav"><a href="/">Home</a><a href="/about">About</a><a href="/archives">Archives</a></nav><div class="profile"><section id="wrapper"><header id="header"><a href="/about"><img class="2x" id="avatar" src="/images/avatar.png"></a><h1>iFrans</h1><h2>前端手艺人Frans.Lee的个人博客</h2></header></section></div><section class="post" id="wrapper"><article><header><h1>京东PLUS会员项目前端性能优化实践</h1><h2 class="headline">Feb 20, 2019 4:41·5,298 words
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>京东PLUS会员项目前端性能优化实践</title><link rel="shortcut icon" href="/images/avatar.png"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="stylesheet" href="/css/github.css"><script src="/js/highlight.min.js"></script></head><body><nav class="main-nav"><a href="/">Home</a><a href="/about">About</a><a href="/archives">Archives</a></nav><div class="profile"><section id="wrapper"><header id="header"><a href="/about"><img class="2x" id="avatar" src="/images/avatar.png"></a><h1>前端小栈</h1><h2>前端手艺人Frans.Lee的个人博客</h2></header></section></div><section class="post" id="wrapper"><article><header><h1>京东PLUS会员项目前端性能优化实践</h1><h2 class="headline">Feb 20, 2019 4:41·5,289 words
 ·19 minutes read<span class="tags"></span></h2></header><section id="post-body"><p>京东PLUS会员项目是国内第一个电商付费会员项目，正式开通的会员数量已破千万。我团队2016年开始接手这个项目的前端开发工作，一路见证了它的高速成长，也为此贡献了自己的力量。</p>
 <p>这个项目有几个特点：</p>
 <p>第一，需求多。移动端使用 H5 开发，曾有人问为什么不用原生或者 RN 开发? 我觉得吧，以这个项目的需求数量和迭代速度来看，连 H5 都难以 hold 的住，还是不要奢望原生和 RN 了。</p>
@@ -39,22 +39,30 @@
 <p>如上文提到，这一波改造会把项目迁移到 <code>Gaea 4.0</code> 脚手架中，新脚手架的 Babel 已经升级到了最新的 7.0 版。Babel7 是 Babel6 推出近三年之后发布的一个断崖式升级的大版本，包含很多新特性，其中一个引人关注的特性就是支持更智能的按需加载 polyfill。</p>
 <p>Babel7 主要是通过其提供的 <code>@babel/preset-env</code> 实现按需加载的。</p>
 <p>使用 <code>@babel/preset-env</code> 也需要首先安装 <code>@babel/polyfill</code>，但最终打出的包并不会导入全部 polyfill。</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install @babel/polyfill --save</span><br></pre></td></tr></table></figure>
+<pre><code class="bash">npm install @babel/polyfill --save
+</code></pre>
 <p>同时，需要在 .browserslistrc 文件或者 .babelrc 的 targets 字段中指定需要兼容的浏览器范围。</p>
 <p>之后在.babelrc文件中对 <code>@babel/preset-env</code> 进行配置。</p>
 <p><code>@babel/preset-env</code> 与按需加载 polyfill 相关的选项是 <code>useBuiltIns</code>，它有两个值需要重点关注： <code>entry</code> 和 <code>usage</code>。</p>
 <p>当值为 <code>entry</code> 时，Babel 会将 <code>import &quot;@babel/polyfill&quot;</code> 或者 <code>require(&quot;@babel/polyfill&quot;)</code> 语句根据我们指定的环境配置替换为单个的 polyfill require。</p>
 <p>如将 </p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">"@babel/polyfill"</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">import &quot;@babel/polyfill&quot;;
+</code></pre>
 <p>替换为</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">"core-js/modules/es7.string.pad-start"</span>;</span><br><span class="line"><span class="keyword">import</span> <span class="string">"core-js/modules/es7.string.pad-end"</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">import &quot;core-js/modules/es7.string.pad-start&quot;;
+import &quot;core-js/modules/es7.string.pad-end&quot;;
+</code></pre>
 <p>当值为 <code>usage</code> 时，更加智能。Babel 会根据每个文件的需要和指定的环境配置添加特定的 polyfill，更牛×的是一个 bundle 中相同的 polyfill 只会加载一次，这也有助于减小 bundle 的体积。推测 Babel 是通过对文件进行静态分析实现的这种精准的按需加载 polyfill 功能。</p>
 <p>如</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Promise</span>();</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var a = new Promise();
+</code></pre>
 <p>转换后（如果指定的环境不支持）</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="string">"core-js/modules/es6.promise"</span>;</span><br><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Promise</span>();</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">import &quot;core-js/modules/es6.promise&quot;;
+var a = new Promise();
+</code></pre>
 <p>转换后（如果指定的环境支持）</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="keyword">new</span> <span class="built_in">Promise</span>();</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">var a = new Promise();
+</code></pre>
 <p>我们尝试了一下，先指定需要兼容的浏览器范围，然后安装 <code>@babel/polyfill</code> 并将 <code>@babel/preset-env</code> 的 <code>useBuiltIns</code> 选项值设为 <code>usage</code>。这样 Babel 就会自动分析每一个文件并在考虑我们指定的浏览器兼容范围的情况下，为每个文件加载其需要的 polyfill。最终项目里只引入了部分 polyfill，经测算，打包后的代码(min)较直接引入完整 babel-polyfill 的方案小60多KB，同时还避免了全局变量污染。</p>
 <p>在 Babel 的配置中开启 Debug 模式，构建的时候可以看到每个文件中添加了哪些 polyfill：</p>
 <p><img src="http://img12.360buyimg.com/uba/jfs/t27742/64/2251782728/135145/6114ee74/5bfce908N44a2729a.png"><br>(有从知乎远道而来的杠精问到：“这都什么年代了，还在兼容Android 4.0和iOS 8.0？” 我叹口气、耸耸肩，与该杠精握握手…)</p>
@@ -103,7 +111,8 @@
 <p>去年我们在项目里应用了 <code>WebP</code> 格式，收效不错。比如某张背景图片，压缩后的 png 格式是35KB，而转成 <code>WebP</code> 只有4KB，两者基本看不出质量上的差别。</p>
 <p>新兴图片格式的应用的主要障碍还是兼容性，以 <code>WebP</code> 为例，谷歌系的浏览器以及欧朋浏览器支持情况良好，Firefox、Edge 也都在新版本提供了支持，可惜苹果公司一直没有跟进，Safari 直到现在也没有要支持的迹象，iOS 上的应用如果想支持，还需自行打包解析库（经测试发现iOS版的京东APP已经提供了支持，点个赞）。</p>
 <p>我们使用 <code>WebP</code> 的方式是在页面上通过JS判断当前浏览器是否支持 <code>WebP</code>，如果支持，则在 body 上增加一个名为 “webp” 的 class，同时把判断结果写入 localStorage，之后再进入页面时直接从 localStorage 里读取，不用每次都执行判断的代码了。然后在页面的 css 中通过 “.webp” 选择器、在 Vue 的图片过滤器中通过判断结果来决定是否加载 <code>WebP</code> 格式图片。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">document</span>.createElement(<span class="string">'canvas'</span>).toDataURL(<span class="string">'image/webp'</span>).indexOf(<span class="string">'data:image/webp'</span>) === <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">document.createElement(&#39;canvas&#39;).toDataURL(&#39;image/webp&#39;).indexOf(&#39;data:image/webp&#39;) === 0
+</code></pre>
 <p>这次的优化，我们考虑增加对我厂 <code>DPG</code> 图片格式的支持。</p>
 <blockquote>
 <p>DPG 是我厂基础架构部-智能存储部推出图片压缩技术，经过 DPG 压缩后的图片兼容 jpeg，同时全平台、全部浏览器都支持，DPG 是一种有损压缩技术，但通过5名用户10000张图片的人眼浏览测试，和 WebP 的清晰度对比没有差距。该技术可以有效地减少图片大小50%，减少 CDN 带宽流量 50%，加快图片用户在设备上的渲染速度。</p>

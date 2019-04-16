@@ -1,4 +1,4 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>再谈Vue组件库开发</title><link rel="shortcut icon" href="/images/avatar.png"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="stylesheet" href="//cdn.bootcss.com/highlight.js/9.2.0/styles/github.min.css"><script src="//cdn.bootcss.com/highlight.js/9.2.0/highlight.min.js"></script></head><body><nav class="main-nav"><a href="/">Home</a><a href="/about">About</a><a href="/archives">Archives</a></nav><div class="profile"><section id="wrapper"><header id="header"><a href="/about"><img class="2x" id="avatar" src="/images/avatar.png"></a><h1>iFrans</h1><h2>前端手艺人Frans.Lee的个人博客</h2></header></section></div><section class="post" id="wrapper"><article><header><h1>再谈Vue组件库开发</h1><h2 class="headline">Aug 16, 2018 2:05·3,339 words
+<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width, initial-scale=1"><title>再谈Vue组件库开发</title><link rel="shortcut icon" href="/images/avatar.png"><link rel="stylesheet" href="/css/style.min.css"><link rel="stylesheet" href="/css/font-awesome.min.css"><link rel="stylesheet" href="/css/github.css"><script src="/js/highlight.min.js"></script></head><body><nav class="main-nav"><a href="/">Home</a><a href="/about">About</a><a href="/archives">Archives</a></nav><div class="profile"><section id="wrapper"><header id="header"><a href="/about"><img class="2x" id="avatar" src="/images/avatar.png"></a><h1>前端小栈</h1><h2>前端手艺人Frans.Lee的个人博客</h2></header></section></div><section class="post" id="wrapper"><article><header><h1>再谈Vue组件库开发</h1><h2 class="headline">Aug 16, 2018 2:05·3,268 words
 ·12 minutes read<span class="tags"></span></h2></header><section id="post-body"><blockquote>
 <p>导读：本文是 Vue 2.0 组件库开发系列文章第二篇。继第一篇《漫谈Vue组件库组件库开发》后，再来聊一聊基于 webpack 脚手架开发一个 Vue 2.0 移动端 UI 组件库的经验与思考。</p>
 </blockquote>
@@ -12,40 +12,110 @@
 <h1 id="Vue组件开发核心方法"><a href="#Vue组件开发核心方法" class="headerlink" title="Vue组件开发核心方法"></a>Vue组件开发核心方法</h1><p>Vue 组件的本质是可复用的 Vue 实例，它们与 new Vue 接收相同的选项，比如 data、computed、watch、methods 以及生命周期钩子等等。 </p>
 <p>Vue 中与组件开发相关的方法主要有 Vue.component 和 Vue.extend，那么二者有什么作用和区别呢？</p>
 <p>先说 Vue.extend 吧。Vue 2.0 文档对 Vue.extend 的描述一笔带过，可它却是 Vue 组件开发最为关键的方法。Vue.extend 的作用是使用基础 Vue 构造器，创建一个“子类”。参数是一个包含组件选项的对象。它返回的是一个“扩展实例构造器”，也就是预设了部分选项的 Vue 的实例构造器。通过对这个“扩展实例构造器”进行实例化，可以得到组件实例。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获得一个“扩展实例构造器”</span></span><br><span class="line"><span class="keyword">let</span> cptConstructor = Vue.extend(&#123;</span><br><span class="line"> <span class="comment">// 预设选项</span></span><br><span class="line">&#125;);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 通过实例化得到一个组件实例</span></span><br><span class="line"><span class="keyword">let</span> cpt = <span class="keyword">new</span> cptConstructor(&#123;</span><br><span class="line"> <span class="comment">// 其他选项</span></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">// 获得一个“扩展实例构造器”
+let cptConstructor = Vue.extend({
+ // 预设选项
+});
+
+// 通过实例化得到一个组件实例
+let cpt = new cptConstructor({
+ // 其他选项
+});
+</code></pre>
 <p>再说 Vue.component。 Vue.component 与 Vue.filter 和 Vue.directive 类似，只是一个注册组件的方法，把通过 Vue.extend 拿到的扩展实例构造器（组件的构造函数）与给定的字符串 ID 进行关联。在之后的 Vue 模板解析时，一旦遇到这个自定义的组件 ID，就将其对应的扩展实例构造器进行实例化，从而得到一个组件的实例，再将其挂载。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 注册组件，传入一个扩展过的构造器</span></span><br><span class="line">Vue.component(<span class="string">'my-component'</span>, Vue.extend(&#123; <span class="comment">/* ... */</span> &#125;))</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">// 注册组件，传入一个扩展过的构造器
+Vue.component(&#39;my-component&#39;, Vue.extend({ /* ... */ }))
+</code></pre>
 <p>在 Vue 2.0 官方教程组件部分的示例中，传入 Vue.component 方法的第二个参数是组件的选项对象，并不是扩展实例构造器，且通篇未提及 Vue.extend，这是肿么回事呢？事实上，这是一种语法糖，传入的第二个参数如果不是一个扩展实例构造器，Vue.component 内部将会自动调用 Vue.extend 方法来生成扩展实例构造器，所以下面这种写法与上面的写法在功能上是一致的。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 注册组件，传入一个选项对象。Vue.component 内部将自动调用 Vue.extend 方法</span></span><br><span class="line">Vue.component(<span class="string">'my-component'</span>, &#123; <span class="comment">/* ... */</span> &#125;)</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">// 注册组件，传入一个选项对象。Vue.component 内部将自动调用 Vue.extend 方法
+Vue.component(&#39;my-component&#39;, { /* ... */ })
+</code></pre>
 <p>Vue.extend 也可以单独使用，通过使用 new 操作符对 Vue.extend 生成的扩展实例构造器进行实例化，便可得到一个组件的实例，之后可根据需要对这个组件的实例进行手动挂载。NutUI 组件库中就有这种用法，比如 Toast 组件，它是挂在 Vue.prototype 属性上的实例方法，并未使用 Vue.component 注册，其大致实现原理如下：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 获得“扩展实例构造器”</span></span><br><span class="line"><span class="keyword">let</span> ToastConstructor = Vue.extend(<span class="built_in">require</span>(<span class="string">'./toast.vue'</span>));</span><br><span class="line"><span class="keyword">let</span> instance;</span><br><span class="line">Vue.prototype.$toast = <span class="function"><span class="keyword">function</span> (<span class="params">...params</span>) </span>&#123;</span><br><span class="line">    <span class="comment">//获取组件实例</span></span><br><span class="line">    instance = <span class="keyword">new</span> ToastConstructor();</span><br><span class="line">    <span class="comment">//挂载</span></span><br><span class="line">    instance.vm = instance.$mount();</span><br><span class="line">    <span class="comment">//插入DOM</span></span><br><span class="line">    <span class="built_in">document</span>.body.appendChild(instance.$el);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">// 获得“扩展实例构造器”
+let ToastConstructor = Vue.extend(require(&#39;./toast.vue&#39;));
+let instance;
+Vue.prototype.$toast = function (...params) {
+    //获取组件实例
+    instance = new ToastConstructor();
+    //挂载
+    instance.vm = instance.$mount();
+    //插入DOM
+    document.body.appendChild(instance.$el);
+};
+</code></pre>
 <h1 id="父子组件的双向数据绑定"><a href="#父子组件的双向数据绑定" class="headerlink" title="父子组件的双向数据绑定"></a>父子组件的双向数据绑定</h1><p>Vue 组件的数据流是单向的，父级 prop 的更新会向下流动到子组件中，但是反过来则不行。这个设计主要是为了防止从子组件意外改变父级组件的状态，从而导致应用的数据流向难以理解，不易维护。</p>
 <p>以 NutUI 中的一个基础组件 Mask （遮罩层组件）为例：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">nut-mask</span></span></span><br><span class="line"><span class="tag"><span class="attr">:visible</span>=<span class="string">"maskShow"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">nut-mask</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;nut-mask
+:visible=&quot;maskShow&quot;&gt;
+&lt;/nut-mask&gt;
+</code></pre>
 <p>prop 特性 visible 绑定的是是父组件的属性 maskShow，父组件中 maskShow 值的变化会自动更新到 mask 组件中。但是，mask 组件内部 visible 状态的变化（比如用户点击关闭遮罩层）并不会自动反映到父组件的 maskShow 上。按照 Vue 2.0 组件的设计，子组件向父组件传递消息，应该通过自定义事件方式。具体到这个栗子，我们需要在组件内部调用内建的 $emit 方法把内部 visible 改变后的新值抛出，然后在父级组件监听这个自定义事件，接收组件内部抛出的值，再将其赋值给 maskShow。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.$emit(<span class="string">'close-mask'</span>,newVisibleValue);</span><br></pre></td></tr></table></figure>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">nut-mask</span></span></span><br><span class="line"><span class="tag"><span class="attr">:visible</span>=<span class="string">"maskShow"</span></span></span><br><span class="line"><span class="tag">@<span class="attr">close-mask</span>=<span class="string">"onMaskClose"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">nut-mask</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">methods: &#123;</span><br><span class="line">  onMaskClose: <span class="function"><span class="keyword">function</span> (<span class="params">newVisibleVal</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">this</span>.maskShow = newVisibleVal;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">this.$emit(&#39;close-mask&#39;,newVisibleValue);
+</code></pre>
+<pre><code class="html">&lt;nut-mask
+:visible=&quot;maskShow&quot;
+@close-mask=&quot;onMaskClose&quot;&gt;
+&lt;/nut-mask&gt;
+</code></pre>
+<pre><code class="javascript">methods: {
+  onMaskClose: function (newVisibleVal) {
+    this.maskShow = newVisibleVal;
+  }
+}
+</code></pre>
 <p>对于普通的 Vue 应用来说，这种处理方式可以接受。但是在一个通用的组件库中，对于 prop 的“双向绑定”是有现实需求的。作为组件库的开发者，我们希望用户可以更方便的使用组件，而不是先去看 API 或者代码，查找组件内部抛出的每个对应 prop 的事件名称和参数，再去编写对应的事件处理函数接收抛出值，再去更新 prop 绑定的属性值。尤其是需要绑定的 prop 数量较多的时候，这种处理方式更显繁琐。</p>
 <p>Vue 框架作者应该也感受到了用户对 prop 双向绑定功能的呼声，在 2.3.0 版的 Vue.js 中新增了 “.sync” 修饰符来解决这个问题。给 prop 加上 “.sync” 修饰符即可实现 prop 的“双向绑定”。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">nut-mask</span></span></span><br><span class="line"><span class="tag"><span class="attr">:visible.sync</span>=<span class="string">"maskShow"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">nut-mask</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;nut-mask
+:visible.sync=&quot;maskShow&quot;&gt;
+&lt;/nut-mask&gt;
+</code></pre>
 <p>那么，这与前面提到的“单向数据流”原则冲突吗？答案是否定的。因为通过 “.sync” 修饰符实现的并非真正意义上的“双向绑定”，只是下面这种写法的语法糖而已：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">nut-mask</span></span></span><br><span class="line"><span class="tag"><span class="attr">:visible</span>=<span class="string">"maskShow"</span></span></span><br><span class="line"><span class="tag">@<span class="attr">update:visible</span>=<span class="string">"maskShow = $event"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">nut-mask</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;nut-mask
+:visible=&quot;maskShow&quot;
+@update:visible=&quot;maskShow = $event&quot;&gt;
+&lt;/nut-mask&gt;
+</code></pre>
 <p>对于组件用户来说，不用再去手动监听事件和赋值了。 而在组件内部，仍然需要显式的通过事件抛出新值。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.$emit(<span class="string">'update:visible'</span>,newVisibleValue);</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">this.$emit(&#39;update:visible&#39;,newVisibleValue);
+</code></pre>
 <p>有意思的是，“.sync” 修饰符在 Vue 1.0 版本就存在，2.0 版本移除，2.3 版又回来了。新版的 “.sync” 修饰符基本满足了组件库开发者的需求，也不违背“单向数据流”原则，是一个不错的设计，在 NutUI 的组件中有不少应用。</p>
 <h1 id="SVG图标复用（SVG-Sprite）"><a href="#SVG图标复用（SVG-Sprite）" class="headerlink" title="SVG图标复用（SVG Sprite）"></a>SVG图标复用（SVG Sprite）</h1><p>上回说到，我们认为移动端组件库比较好的图标解决方案是 SVG，且通过 symbol 元素等方式可实现 SVG 图标的复用。现在，我们接着这个话题再往下唠十块钱的。</p>
 <p>所谓的 “SVG Sprite” 解决方案存在不止一种，引用方式也有差异，有的基于位置，有的基于 ID。个人更倾向于使用基于 ID 引用的方式，主要因为方便，可省去关心具体位置信息的麻烦。而使用 symbol 元素的 “SVG Sprite” 方式就是基于 ID 引用的。</p>
 <p>symbol 元素提供了一种组合 SVG 元素的方式，我们可以把供后续使用的 SVG 图标元素使用 symbol 元素定义，而 symbol 元素自身并不会显示出来。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">svg</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">symbol</span> <span class="attr">id</span>=<span class="string">"icon1"</span>&gt;</span></span><br><span class="line">        ...</span><br><span class="line">    <span class="tag">&lt;/<span class="name">symbol</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">symbol</span> <span class="attr">id</span>=<span class="string">"icon2"</span>&gt;</span></span><br><span class="line">        ...</span><br><span class="line">    <span class="tag">&lt;/<span class="name">symbol</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">symbol</span> <span class="attr">id</span>=<span class="string">"icon3"</span>&gt;</span></span><br><span class="line">        ...</span><br><span class="line">    <span class="tag">&lt;/<span class="name">symbol</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">svg</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;svg&gt;
+    &lt;symbol id=&quot;icon1&quot;&gt;
+        ...
+    &lt;/symbol&gt;
+    &lt;symbol id=&quot;icon2&quot;&gt;
+        ...
+    &lt;/symbol&gt;
+    &lt;symbol id=&quot;icon3&quot;&gt;
+        ...
+    &lt;/symbol&gt;
+&lt;/svg&gt;
+</code></pre>
 <p>在需要使用 SVG 图标的地方，我们可以使用 SVG 的 use 元素直接通过 ID 引用对应的 symbol 元素，还支持尺寸、样式等维度的个性化设定。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">&lt;!-- 通过ID引用对应的 symbol 元素，并设置尺寸和填充颜色 --&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">svg</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">use</span> <span class="attr">xlink:href</span>=<span class="string">"#icon1"</span> <span class="attr">width</span>=<span class="string">"30"</span> <span class="attr">height</span>=<span class="string">"30"</span> <span class="attr">style</span>=<span class="string">"fill:#000;"</span>&gt;</span><span class="tag">&lt;/<span class="name">use</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">svg</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;!-- 通过ID引用对应的 symbol 元素，并设置尺寸和填充颜色 --&gt;
+&lt;svg&gt;
+    &lt;use xlink:href=&quot;#icon1&quot; width=&quot;30&quot; height=&quot;30&quot; style=&quot;fill:#000;&quot;&gt;&lt;/use&gt;
+&lt;/svg&gt;
+</code></pre>
 <p>在 webpack 中，我们可以通过 svg-sprite-loader 实现 SVG Sprite 的自动生成，这样一来不仅简化了 SVG Sprite 的使用，还解决了 SVG 图标的按需打包问题。 svg-sprite-loader 的用法还是比较简单的，通过 npm 安装之后，在 webpack 配置文件里针对 SVG 格式文件进行配置：</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//webpack.config.js</span></span><br><span class="line">&#123;</span><br><span class="line">  test: <span class="regexp">/\.svg$/</span>,</span><br><span class="line">  loader: <span class="string">'svg-sprite-loader'</span>,</span><br><span class="line">  options: &#123; ... &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">//webpack.config.js
+{
+  test: /\.svg$/,
+  loader: &#39;svg-sprite-loader&#39;,
+  options: { ... }
+}
+</code></pre>
 <p>在组件 vue 文件里引入需要用到的 SVG 图标。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> arrowTopIcon <span class="keyword">from</span> <span class="string">'../svg/arrow-thin-up.svg'</span>;</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">import arrowTopIcon from &#39;../svg/arrow-thin-up.svg&#39;;
+</code></pre>
 <p>然后在 vue 文件的 template 里就可以通过 ID 引用这个 SVG 图标了。对于这种用法，ID 默认为文件名。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">svg</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">use</span> <span class="attr">xlink:href</span>=<span class="string">"#arrow-thin-up"</span>/&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">svg</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<pre><code class="html">&lt;svg&gt;
+    &lt;use xlink:href=&quot;#arrow-thin-up&quot;/&gt;
+&lt;/svg&gt;
+</code></pre>
 <p>项目运行时，所有引入的 SVG 图标都会被自动转成 symbol 元素并插入页面，供页面使用。</p>
 <p>这个 loader 还有其他用法，有兴趣的小伙伴可以查阅相关文档[2]，这里就不赘述了。</p>
 <h1 id="移动端组件在PC端的展示"><a href="#移动端组件在PC端的展示" class="headerlink" title="移动端组件在PC端的展示"></a>移动端组件在PC端的展示</h1><p>NutUI 的定位是一个移动端的组件库，官网（包括文档和 DEMO 相关页面）需要支持 PC 和移动端访问，所以我们基于 CSS3 媒体查询对页面进行了响应式处理，解决了适配问题。不过，真正令人感到头疼的问题是如何在 PC 端展示这些移动端组件示例。早期，我们参考了一些移动端组件库的做法，在页面上通过 iframe 嵌套展示移动端组件 DEMO 页面。为了让它看起来更像手机，还可以把背景图片设置为一张手机外观图片，把 iframe 定位在这个手机的“屏幕”位置（如下图）。</p>
@@ -54,11 +124,12 @@
 <p>不可否认，有些场景确实还有在 PC 端查看组件 DEMO 页的需求，比如组件的开发调试阶段。所以我们后来还是在 PC 端文档页面加了一个不太明显的入口，可以直接打开对应组件的 DEMO 页。具体在哪里呢？这里卖个关子，有兴趣的小伙伴可以找找看。</p>
 <p><img src="https://img30.360buyimg.com/uba/jfs/t20290/243/1006402251/46990/a83dd2f5/5b1e3a80N6dca0ae7.gif"></p>
 <h1 id="发布NPM包"><a href="#发布NPM包" class="headerlink" title="发布NPM包"></a>发布NPM包</h1><p>NutUI 组件库推荐通过 NPM 方式安装。</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">npm install @nutui/nutui --save</span><br></pre></td></tr></table></figure>
+<pre><code class="javascript">npm install @nutui/nutui --save
+</code></pre>
 <p>不知道你有没有注意到，NutUI 的 NPM 包名是 “@nutui/nutui”，这个命名受到了 NPM 官方前一段时间发布的新的包命名规则影响。<br>新的规则比过往严格了很多，发新包时会把包名中的标点符号全部去掉与现有的包进行比较，如有雷同则是不被允许发布的。另一方面，新的规则推荐使用 scope，这决定了我们包名中的 “@nutui” 部分的存在。</p>
 <p>我们在发布 NPM 包的时候还遇到过一些麻烦，比如总报403等错误，最终排查出是第三方 NPM 镜像的问题。NPM 官方仓库在国内访问速度不佳，所以很多国内开发者平时使用的是第三方镜像。这些第三方镜像一般会定时同步 NPM 官方仓库数据，平时使用第三方镜像安装 NPM 包通常没什么问题。只是在发布 NPM 包时，要记得先切到官方 registry，因为第三方镜像大都是只读的，不支持发布新包，我们当然也没必要往第三方镜像提交新包，你说呢？</p>
 <p>今天先聊到这里吧，产品经理又来改需求了……</p>
 <p><img src="https://img11.360buyimg.com/uba/jfs/t20071/239/1416781737/14151/6800b818/5b1e41c1Naa5d9d04.jpg"></p>
 <h2 id="扩展阅读"><a href="#扩展阅读" class="headerlink" title="扩展阅读"></a>扩展阅读</h2><p>[1] <a href="http://nutui.jd.com/" target="_blank" rel="noopener">http://nutui.jd.com/</a></p>
 <p>[2] <a href="https://www.npmjs.com/package/svg-sprite-loader" target="_blank" rel="noopener">https://www.npmjs.com/package/svg-sprite-loader</a></p>
-</section><nav id="post-nav"><span class="prev"><a href="/京东开源移动端Vue组件库NutUI 2.0发布/"><span class="arrow">←</span>Newer Posts</a></span><span class="next"><a href="/漫谈Vue组件库开发/">Older Posts<span class="arrow">→</span></a></span></nav></article></section><footer id="footer"><div id="social"><a class="symbol" href="https://github.com/Franslee"><i class="fa fa-github"></i></a></div><p class="small">© Copyright 2018 &nbsp;<i class="fa fa-heart" aria-hidden="true">&nbsp;Frans</i></p><p class="small">Powered by &nbsp;<a href="https://hexo.io/">Hexo &nbsp;</a>Theme By &nbsp;<a href="https://github.com/fuzhouxxdong/hexo-theme-dxx">Dxx</a></p></footer><script>hljs.initHighlightingOnLoad();</script></body></html>
+</section><nav id="post-nav"><span class="prev"><a href="/不依赖wifi热点的移动Web真机调试测试工具Carefree/"><span class="arrow">←</span>Newer Posts</a></span><span class="next"><a href="/漫谈Vue组件库开发/">Older Posts<span class="arrow">→</span></a></span></nav></article></section><footer id="footer"><div id="social"><a class="symbol" href="https://github.com/Franslee"><i class="fa fa-github"></i></a></div><p class="small">© Copyright 2018 &nbsp;<i class="fa fa-heart" aria-hidden="true">&nbsp;Frans</i></p><p class="small">Powered by &nbsp;<a href="https://hexo.io/">Hexo &nbsp;</a>Theme By &nbsp;<a href="https://github.com/fuzhouxxdong/hexo-theme-dxx">Dxx</a></p></footer><script>hljs.initHighlightingOnLoad();</script></body></html>
